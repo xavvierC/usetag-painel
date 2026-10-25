@@ -404,7 +404,12 @@ export function Panel({ section }: { section: string }) {
                 />
               </div>
               <div className="charts-row">
-                <SalesChart sales={sales} start={start} end={end} />
+                <SalesChart
+                  sales={sales}
+                  start={start}
+                  end={end}
+                  live={live}
+                />
                 <section className="surface goal-card">
                   <div className="surface-title">
                     <h2>Sua próxima conquista</h2>
@@ -450,7 +455,6 @@ export function Panel({ section }: { section: string }) {
                 </div>
                 <SalesTable sales={filtered.slice(0, 5)} />
                 <div className="table-footer">
-                  <span>{filtered.length} venda(s) no filtro</span>
                   <span>Comissão sobre vendas aprovadas</span>
                 </div>
               </section>
@@ -678,10 +682,12 @@ function SalesChart({
   sales,
   start,
   end,
+  live,
 }: {
   sales: Sale[];
   start: string;
   end: string;
+  live: boolean;
 }) {
   const valid = isDate(start) && isDate(end) && start <= end;
   const span = valid
@@ -765,7 +771,7 @@ function SalesChart({
       </div>
       <div className="chart-caption">
         <span>Valores em reais (R$)</span>
-        <span>Dados de demonstração</span>
+        <span>{live ? "Dados atuais" : "Dados de demonstração"}</span>
       </div>
     </section>
   );

@@ -35,8 +35,8 @@ export const demoSales: Sale[] = [
   },
 ];
 export const demoGoal: Goal = {
-  amountCents: 300000,
+  amountCents: 500000,
   startsOn: "2026-10-23",
   endsOn: "2026-10-28",
-  name: "Rumo aos R$ 3 mil",
+  name: "Rumo aos R$ 5 mil até quarta",
 };

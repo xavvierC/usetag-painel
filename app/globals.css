@@ -1139,6 +1139,9 @@ td small {
   color: #9eacbb;
   font-size: 9px;
   line-height: 1.4;
+  width: 100%;
+  min-width: 0;
+  white-space: normal;
 }
 .ai-consent input {
   flex: 0 0 auto;
@@ -1370,6 +1373,9 @@ td small {
   gap: 7px;
   font-size: 11px;
   white-space: nowrap;
+}
+.check-label.ai-consent {
+  white-space: normal;
 }
 .section-gap {
   margin-top: 20px;
@@ -1994,8 +2000,9 @@ dialog::backdrop {
     max-width: 100px;
   }
   .toolbar {
-    gap: 10px;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
     margin-bottom: 17px;
   }
   .toolbar-date {
@@ -2005,10 +2012,18 @@ dialog::backdrop {
     display: none;
   }
   .period-select {
+    width: min(100%, 290px);
     padding: 0 8px;
   }
   .period-select select {
+    min-width: 0;
+    flex: 1;
     font-size: 10px;
+  }
+  .toolbar-date {
+    padding: 0 2px;
+    line-height: 1.4;
+    color: #8795a5;
   }
   .date-fields {
     width: 100%;
