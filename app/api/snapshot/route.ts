@@ -52,6 +52,7 @@ export async function GET() {
     status: row.payment_status,
     archived: !!row.archived_at,
     version: row.version,
+    note: row.note ?? undefined,
     receivedCents: (Array.isArray(row.commissions)
       ? row.commissions
       : row.commissions

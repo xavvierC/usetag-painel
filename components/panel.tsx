@@ -18,12 +18,12 @@ import {
   Search,
   Settings2,
   ShoppingBag,
-  Sparkles,
   Target,
   Users,
   Wallet,
   X,
   FileText,
+  Gift,
   ShieldCheck,
   Database,
   Zap,
@@ -35,6 +35,7 @@ import { Brand, Empty, Modal } from "./ui";
 import { SalesTable } from "./sales-table";
 import { SaleForm } from "./sale-form";
 import { DispatchEditor } from "./dispatch-editor";
+import { Raffle } from "./raffle";
 import { Clients } from "./clients";
 import {
   allocatePayment,
@@ -60,7 +61,7 @@ const navigation = [
   ["financeiro", "Financeiro", Wallet],
   ["metas", "Metas", Target],
   ["expedicao", "Pedidos", FileText],
-  ["assistente", "Assistente IA", Sparkles],
+  ["sorteio", "Sorteio", Gift],
 ] as const;
 export function Panel({ section }: { section: string }) {
   const {
@@ -146,10 +147,11 @@ export function Panel({ section }: { section: string }) {
     .sort(
       (a, b) => b.soldOn.localeCompare(a.soldOn) || b.id.localeCompare(a.id),
     );
+  const activeRoute = section === "assistente" ? "sorteio" : section;
   const title =
     section === "configuracoes"
       ? "Configurações"
-      : (navigation.find((n) => n[0] === section)?.[1] ?? "Visão geral");
+      : (navigation.find((n) => n[0] === activeRoute)?.[1] ?? "Visão geral");
   const descriptions: Record<string, string> = {
     dashboard: "Suas vendas em perspectiva. Seu próximo objetivo à vista.",
     vendas: "Cada venda, cada detalhe, tudo no lugar.",
@@ -158,7 +160,8 @@ export function Panel({ section }: { section: string }) {
     financeiro: "Clareza sobre o dinheiro que entrou e saiu.",
     metas: "Um objetivo claro. Um passo de cada vez.",
     expedicao: "Do atendimento ao pedido organizado.",
-    assistente: "Transforme os dados do cliente em uma mensagem pronta.",
+    sorteio: "Acompanhe as entradas da promoção e prepare a apuração.",
+    assistente: "Acompanhe as entradas da promoção e prepare a apuração.",
     configuracoes: "Seu espaço, suas preferências e conexões.",
   };
   function exportSales() {
@@ -254,12 +257,12 @@ export function Panel({ section }: { section: string }) {
             <Link
               key={route}
               href={"/" + route}
-              className={section === route ? "nav-link active" : "nav-link"}
-              aria-current={section === route ? "page" : undefined}
+              className={activeRoute === route ? "nav-link active" : "nav-link"}
+              aria-current={activeRoute === route ? "page" : undefined}
             >
               <Icon size={19} strokeWidth={1.65} />
               <span>{label}</span>
-              {section === route && <span className="nav-active-dot" />}
+              {activeRoute === route && <span className="nav-active-dot" />}
             </Link>
           ))}
         </nav>
@@ -320,7 +323,7 @@ export function Panel({ section }: { section: string }) {
             Configurar ambiente <ArrowUpRight size={14} />
           </Link>
         </div>
-        {!["configuracoes", "expedicao", "assistente", "metas"].includes(
+        {!["configuracoes", "expedicao", "assistente", "sorteio", "metas"].includes(
           section,
         ) && (
           <div className="toolbar">
@@ -573,9 +576,8 @@ export function Panel({ section }: { section: string }) {
         {section === "comissoes" && <Commissions start={start} end={end} />}
         {section === "financeiro" && <Finance start={start} end={end} />}
         {section === "metas" && <Goals />}
-        {(section === "expedicao" || section === "assistente") && (
-          <DispatchEditor />
-        )}
+        {section === "expedicao" && <DispatchEditor />}
+        {(section === "sorteio" || section === "assistente") && <Raffle />}
         {section === "configuracoes" && <Settings />}
         <footer className="main-footer">
           <span>

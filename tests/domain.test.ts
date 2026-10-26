@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {allocatePayment,adjustment,cents,commission,csv,outstanding,summary,type Sale} from '../lib/domain/finance.ts';
 import {blankDispatch,dispatchIssues,formatDispatch,parseDispatch} from '../lib/domain/dispatch.ts';
 import {sameOrigin} from '../lib/domain/origin.ts';
+import {raffleParticipants,raffleTrackingCode,salePlateCount} from '../lib/domain/raffle.ts';
 const sale=(id:string,amountCents:number):Sale=>({id,clientId:id,client:'Cliente fictício',amountCents,rateBps:500,soldOn:'2026-10-23',status:'approved',archived:false,version:1,receivedCents:0,items:[]});
 test('origin compares public request host and protocol without accepting another site',()=>{
  const request=(origin:string,host='127.0.0.1:4180',protocol='http')=>new Request('http://localhost:4180/api/command',{headers:{origin,host,'x-forwarded-proto':protocol}});
@@ -46,4 +47,15 @@ test('dispatch accepts the customer address format without requiring city or UF'
   assert.deepEqual(dispatchIssues(d),[]);
   assert.match(formatDispatch(d),/Total: 22 unidades/);
   assert.doesNotMatch(formatDispatch(d),/cidade|UF/i);
+});
+test('raffle only includes approved, active sales marked in the promotion',()=>{
+  const participants=raffleParticipants([
+    {...sale('plain',10000),note:'Venda comum'},
+    {...sale('pending',10000),status:'pending',note:'Participante do sorteio'},
+    {...sale('archived',10000),archived:true,note:'Participante do sorteio'},
+    {...sale('valid',10000),note:'Participante do sorteio em 05/11/2026; Código de rastreio: AP123456789BR',items:[{model:'google',color:'blue',quantity:10,isGift:false}]},
+  ]);
+  assert.deepEqual(participants.map((item)=>item.id),['valid']);
+  assert.equal(raffleTrackingCode(participants[0]),'AP123456789BR');
+  assert.equal(salePlateCount(participants[0]),10);
 });

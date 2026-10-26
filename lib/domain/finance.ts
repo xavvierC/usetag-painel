@@ -17,6 +17,7 @@ export type Sale = {
   version: number;
   receivedCents: number;
   items: SaleItem[];
+  note?: string;
 };
 export type Transaction = {
   id: string;

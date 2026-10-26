@@ -9,6 +9,7 @@ const sections = [
   "financeiro",
   "metas",
   "expedicao",
+  "sorteio",
   "assistente",
   "configuracoes",
 ];
