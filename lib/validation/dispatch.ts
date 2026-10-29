@@ -20,7 +20,7 @@ export const dispatchSchema = z
       .array(
         z
           .object({
-            model: z.enum(["Google", "Instagram", ""]),
+            model: z.enum(["Google", "Instagram", "Uber", ""]),
             color: z.enum(["Azul", "Preto", ""]),
             quantity: z.number().int().min(0).max(100000).nullable(),
             gift: z.boolean(),

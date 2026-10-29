@@ -345,13 +345,21 @@ export function DispatchEditor({ compact = false }: { compact?: boolean }) {
                       update({
                         ...data,
                         items: data.items.map((x, j) =>
-                          j === i ? { ...x, model: e.target.value } : x,
+                          j === i
+                            ? {
+                                ...x,
+                                model: e.target.value,
+                                color:
+                                  e.target.value === "Google" ? x.color : "",
+                              }
+                            : x,
                         ),
                       })
                     }
                   >
                     <option>Google</option>
                     <option>Instagram</option>
+                    <option>Uber</option>
                   </select>
                 </label>
                 <label>

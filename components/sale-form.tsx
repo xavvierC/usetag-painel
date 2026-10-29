@@ -166,7 +166,7 @@ export function SaleForm({
                             ...x,
                             model: e.target.value as SaleItem["model"],
                             color:
-                              e.target.value === "instagram" ? null : "blue",
+                              e.target.value === "google" ? "blue" : null,
                           }
                         : x,
                     ),
@@ -175,6 +175,7 @@ export function SaleForm({
               >
                 <option value="google">Google</option>
                 <option value="instagram">Instagram</option>
+                <option value="uber">Uber</option>
               </select>
             </label>
             <label>

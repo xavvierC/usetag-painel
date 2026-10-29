@@ -1,6 +1,6 @@
 export type SaleStatus = "approved" | "pending" | "analysis" | "cancelled";
 export type SaleItem = {
-  model: "google" | "instagram";
+  model: "google" | "instagram" | "uber";
   color: "blue" | "black" | null;
   quantity: number;
   isGift: boolean;

@@ -113,14 +113,18 @@ export function parseDispatch(text: string): Dispatch {
       if (n) result.declaredTotal = Number(n[1]);
       continue;
     }
-    if (/google|instagram/i.test(line)) {
+    if (/google|instagram|uber/i.test(line)) {
       const quantityMatch =
         line.match(/:\s*[_\s]*(\d+)/) ||
-        line.match(/^(\d+)\s*(?:unidades\s*\|\s*)?(?:google|instagram)/i) ||
+        line.match(/^(\d+)\s*(?:unidades\s*\|\s*)?(?:google|instagram|uber)/i) ||
         line.match(/\b(\d+)\s*unidades/i);
       const quantity = quantityMatch ? Number(quantityMatch[1]) : null;
       if (quantity === 0) continue;
-      const model = /instagram/i.test(line) ? "Instagram" : "Google";
+      const model = /uber/i.test(line)
+        ? "Uber"
+        : /instagram/i.test(line)
+          ? "Instagram"
+          : "Google";
       const color = /azul|azuis/i.test(line)
         ? "Azul"
         : /preto|preta|pretas/i.test(line)

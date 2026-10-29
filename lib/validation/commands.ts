@@ -5,7 +5,7 @@ const amount = z.number().int().min(1).max(10_000_000_000);
 const date = z.string().refine(isDate, "Data inválida");
 const item = z
   .object({
-    model: z.enum(["google", "instagram"]),
+    model: z.enum(["google", "instagram", "uber"]),
     color: z.enum(["blue", "black"]).nullable(),
     quantity: z.number().int().min(1).max(100000),
     isGift: z.boolean(),

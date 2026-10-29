@@ -24,7 +24,7 @@ create table public.sales (
 );
 create table public.sale_items (
  id uuid primary key default gen_random_uuid(),owner_id uuid not null references auth.users(id),sale_id uuid not null,
- model text not null check(model in ('google','instagram')),color text check(color in ('blue','black')),
+ model text not null check(model in ('google','instagram','uber')),color text check(color in ('blue','black')),
  quantity integer not null check(quantity between 1 and 100000),is_gift boolean not null default false,
  check(model<>'google' or color is not null),foreign key(sale_id,owner_id) references public.sales(id,owner_id)
 );

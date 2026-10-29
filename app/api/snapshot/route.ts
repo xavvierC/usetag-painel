@@ -69,7 +69,7 @@ export async function GET() {
       ),
     items: (row.sale_items ?? []).map(
       (i: {
-        model: "google" | "instagram";
+        model: "google" | "instagram" | "uber";
         color: "blue" | "black" | null;
         quantity: number;
         is_gift: boolean;

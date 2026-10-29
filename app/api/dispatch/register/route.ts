@@ -115,7 +115,7 @@ export async function POST(request: Request) {
       status: data.paymentStatus ?? "approved",
       version: 1,
       items: items.map((item) => ({
-        model: item.model.toLowerCase() as "google" | "instagram",
+        model: item.model.toLowerCase() as "google" | "instagram" | "uber",
         color: item.color
           ? (item.color === "Azul" ? "blue" : "black")
           : null,
