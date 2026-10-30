@@ -195,11 +195,12 @@ textarea::placeholder {
 input:focus,
 textarea:focus,
 select:focus {
-  border-color: var(--green);
+  border-color: #718196;
+  box-shadow: 0 0 0 2px #71819633;
 }
 :focus-visible {
-  outline: 2px solid var(--green);
-  outline-offset: 4px;
+  outline: 2px solid #c2ccd7;
+  outline-offset: 3px;
 }
 label {
   font-size: 12px;
@@ -595,6 +596,10 @@ option {
   background: #1d2530;
   border-radius: 6px;
 }
+.period-select:focus-within {
+  border-color: #718196;
+  box-shadow: 0 0 0 2px #71819633;
+}
 .period-select select {
   background: transparent;
   border: 0;
@@ -700,16 +705,108 @@ option {
   color: #a2afbf;
 }
 .metric-accent {
-  border-color: #3a6d59;
-  background: #202e2c;
+  border-color: #526273;
+  background: #202832;
 }
 .metric-accent .metric-icon {
-  background: #2a443a;
-  color: #52e6a0;
-  border-color: #436151;
+  background: #2b3745;
+  color: #d1dbe5;
+  border-color: #53657a;
 }
 .metric-accent > strong {
-  color: #72efb3;
+  color: #f3f7fb;
+}
+.commission-overview {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: 14px;
+}
+.commission-primary {
+  min-height: 168px;
+  background: linear-gradient(135deg, #232d39 0%, #1d2530 100%);
+  border-color: #536375;
+}
+.commission-primary-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.commission-primary-heading > svg {
+  color: #c2ccd7;
+}
+.eyebrow {
+  display: block;
+  color: #9aa9ba;
+  font-size: 9px;
+  letter-spacing: 0.13em;
+  font-weight: 600;
+}
+.commission-primary h2 {
+  margin-top: 8px;
+  font-size: 16px;
+}
+.commission-primary > strong {
+  display: block;
+  margin-top: 19px;
+  color: #f6f8fb;
+  font-size: clamp(30px, 4vw, 40px);
+  line-height: 1;
+  letter-spacing: -1.5px;
+  font-variant-numeric: tabular-nums;
+}
+.commission-primary > p {
+  margin-top: 11px;
+  color: #aab6c4;
+  font-size: 10px;
+}
+.commission-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+.commission-summary-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 168px;
+  padding: 15px;
+}
+.commission-summary-card > span {
+  color: #c3ccd7;
+  font-size: 10px;
+}
+.commission-summary-card > strong {
+  margin: 12px 0 7px;
+  color: #f5f7fa;
+  font-size: 21px;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+}
+.commission-summary-card > small {
+  color: #94a1b1;
+  font-size: 9px;
+  line-height: 1.4;
+}
+.commission-note {
+  margin: 14px 0 0;
+  padding: 11px 13px;
+  border-left: 2px solid #738396;
+  background: #1a222d;
+  color: #b3bfcc;
+  font-size: 10px;
+  line-height: 1.55;
+}
+.commission-settlement-footer {
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+.commission-settlement-footer strong {
+  color: #e5ebf1;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
 }
 .charts-row {
   display: grid;
@@ -2147,6 +2244,18 @@ dialog::backdrop {
     --sidebar-width: 0px;
     --header-height: 64px;
   }
+  .commission-summary-grid {
+    grid-template-columns: 1fr;
+  }
+  .commission-summary-card {
+    min-height: 96px;
+  }
+  .commission-primary > strong {
+    font-size: 32px;
+  }
+  .commission-note {
+    font-size: 9px;
+  }
   .topbar {
     padding: 0 16px;
     gap: 8px;
@@ -2297,6 +2406,13 @@ dialog::backdrop {
   .metrics.three {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
+  }
+  .commission-overview {
+    grid-template-columns: 1fr;
+  }
+  .commission-primary,
+  .commission-summary-card {
+    min-height: 0;
   }
   .metric {
     min-height: 118px;

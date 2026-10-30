@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {allocatePayment,adjustment,cents,commission,csv,outstanding,summary,type Sale} from '../lib/domain/finance.ts';
+import {allocatePayment,adjustment,cents,commission,csv,effectiveOutstanding,outstanding,summary,type Sale} from '../lib/domain/finance.ts';
 import {blankDispatch,dispatchIssues,formatDispatch,parseDispatch} from '../lib/domain/dispatch.ts';
 import {sameOrigin} from '../lib/domain/origin.ts';
 import {raffleParticipants,raffleTrackingCode,salePlateCount} from '../lib/domain/raffle.ts';
@@ -29,6 +29,14 @@ test('partial/group payments cannot over-allocate and preserve original inputs',
 test('archival preserves commission; cancellation exposes excess without inventing cash',()=>{
   const archived={...sale('a',29900),archived:true};assert.equal(summary([archived],'2026-10-23','2026-10-28').amount,0);assert.equal(outstanding(archived),1495);
   const cancelled={...archived,status:'cancelled' as const,receivedCents:1000};assert.equal(outstanding(cancelled),0);assert.equal(adjustment(cancelled),1000);
+});
+
+test('manual commission settlement removes only listed sales from the open balance',()=>{
+  const first=sale('a',29900);
+  const second=sale('b',55380);
+  const settlement={label:'Acerto anterior',paidAmountCents:30000,items:[{saleId:'a',label:'Cliente A',saleAmountCents:first.amountCents,commissionCents:1495}]};
+  assert.equal(effectiveOutstanding(first,settlement),0);
+  assert.equal(effectiveOutstanding(second,settlement),2769);
 });
 test('CSV quotes and neutralizes formulas including leading whitespace',()=>{
   const text=csv([['=1+1','  @SUM(A1)','normal;"text"','\tmalicious']]);assert.ok(text.includes("'=1+1"));assert.ok(text.includes("'  @SUM(A1)"));assert.ok(text.includes('""text""'));assert.ok(text.startsWith('\uFEFF'));

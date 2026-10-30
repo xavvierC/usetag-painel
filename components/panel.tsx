@@ -44,10 +44,10 @@ import {
   commission,
   csv,
   dateLabel,
+  effectiveOutstanding,
   isDate,
   money,
   obligation,
-  outstanding,
   summary,
   today,
   type Sale,
@@ -123,6 +123,13 @@ export function Panel({ section }: { section: string }) {
     datesValid ? end : "0000",
   );
   const goalStats = summary(sales, goal.startsOn, goal.endsOn);
+  const openCommission = sales
+    .filter((sale) => sale.status === "approved" && !sale.archived)
+    .reduce(
+      (total, sale) =>
+        total + effectiveOutstanding(sale, profile.commissionSettlement),
+      0,
+    );
   const totalPlates = sales
     .filter((sale) => sale.status === "approved" && !sale.archived)
     .reduce(
@@ -400,8 +407,8 @@ export function Panel({ section }: { section: string }) {
                 />
                 <Metric
                   label="A receber"
-                  value={money(stats.pending)}
-                  detail="Comissões das vendas do período"
+                  value={money(openCommission)}
+                  detail="Saldo atual após o acerto informado"
                   icon={Wallet}
                   accent
                 />
@@ -790,47 +797,77 @@ function SalesChart({
 }
 
 function Commissions({ start, end }: { start: string; end: string }) {
-  const { sales, registerPayment, live, busy } = useStore();
+  const { sales, registerPayment, live, busy, profile } = useStore();
   const [open, setOpen] = useState(false);
   const [error, setError] = useState("");
   const [alloc, setAlloc] = useState<Record<string, string>>({});
-  const cohort = sales.filter((s) => s.soldOn >= start && s.soldOn <= end);
-  const stats = summary(sales, start, end);
+  const settlement = profile.commissionSettlement;
+  const activeSales = sales.filter((s) => s.status === "approved" && !s.archived);
+  const openSales = activeSales.filter(
+    (sale) => effectiveOutstanding(sale, settlement) > 0,
+  );
+  const openCommission = openSales.reduce(
+    (total, sale) => total + effectiveOutstanding(sale, settlement),
+    0,
+  );
+  const openSalesAmount = openSales.reduce((total, sale) => total + sale.amountCents, 0);
+  const settledItems = settlement?.items ?? [];
+  const listedCommission = settledItems.reduce(
+    (total, item) => total + item.commissionCents,
+    0,
+  );
+  const settlementDifference = settlement
+    ? settlement.paidAmountCents - listedCommission
+    : 0;
+  const periodStats = summary(sales, start, end);
   return (
     <>
-      <div className="metrics">
-        <Metric
-          label="Direito de comissão"
-          value={money(stats.generated)}
-          detail="Vendas do período, inclusive arquivadas"
-          icon={CircleDollarSign}
-        />
-        <Metric
-          label="Recebido na coorte"
-          value={money(stats.received)}
-          detail="Situação atual das vendas do período"
-          icon={ArrowDownLeft}
-        />
-        <Metric
-          label="A receber"
-          value={money(stats.pending)}
-          detail="Saldo disponível para alocação"
-          icon={Wallet}
-          accent
-        />
-        <Metric
-          label="Ajustes a resolver"
-          value={money(stats.adjustments)}
-          detail="Excedentes de vendas canceladas/editadas"
-          icon={ArrowUpDown}
-        />
+      <div className="commission-overview">
+        <section className="surface commission-primary">
+          <div className="commission-primary-heading">
+            <div>
+              <span className="eyebrow">SALDO ATUAL</span>
+              <h2>Comissões em aberto</h2>
+            </div>
+            <Wallet size={19} />
+          </div>
+          <strong>{money(openCommission)}</strong>
+          <p>
+            {openSales.length} venda(s) aguardando acerto · {money(openSalesAmount)} em
+            vendas aprovadas
+          </p>
+        </section>
+        <div className="commission-summary-grid">
+          <section className="surface commission-summary-card">
+            <span>Acerto anterior</span>
+            <strong>{money(settlement?.paidAmountCents ?? 0)}</strong>
+            <small>Valor informado como pago</small>
+          </section>
+          <section className="surface commission-summary-card">
+            <span>Comissão listada</span>
+            <strong>{money(listedCommission)}</strong>
+            <small>{settledItems.length} vendas do acerto</small>
+          </section>
+          <section className="surface commission-summary-card">
+            <span>Diferença do acerto</span>
+            <strong>{money(Math.max(0, settlementDifference))}</strong>
+            <small>Valor acima da comissão listada</small>
+          </section>
+        </div>
       </div>
+      {settlement && (
+        <p className="commission-note" role="status">
+          O acerto anterior considera exatamente os {settledItems.length} itens informados.
+          Pedro Eugênio não aparece nessa lista e continua em aberto. O período selecionado
+          mostra {money(periodStats.generated)} em comissão gerada.
+        </p>
+      )}
       <section className="surface section-gap">
         <div className="surface-title">
           <div>
-            <h2>Suas comissões</h2>
+            <h2>Comissões em aberto</h2>
             <p className="muted">
-              Saldos atuais por venda · taxa preservada no fechamento
+              O valor abaixo é o saldo exato disponível para cobrança.
             </p>
           </div>
           <button className="button primary" onClick={() => setOpen(true)}>
@@ -843,39 +880,75 @@ function Commissions({ start, end }: { start: string; end: string }) {
             <thead>
               <tr>
                 <th>Cliente</th>
+                <th>Data</th>
                 <th className="numeric">Venda</th>
                 <th className="numeric">Comissão</th>
-                <th className="numeric">Recebido</th>
-                <th className="numeric">Pendente</th>
-                <th className="numeric">Ajuste</th>
+                <th>Situação</th>
               </tr>
             </thead>
             <tbody>
-              {cohort.map((s) => (
+              {openSales.map((s) => (
                 <tr key={s.id}>
-                  <td>
-                    {s.client}
-                    {s.archived && <small>Arquivada</small>}
-                  </td>
+                  <td>{s.client}</td>
+                  <td>{dateLabel(s.soldOn)}</td>
                   <td className="numeric">{money(s.amountCents)}</td>
-                  <td className="numeric">{money(obligation(s))}</td>
-                  <td className="numeric">{money(s.receivedCents)}</td>
                   <td className="numeric commission-value">
-                    {money(outstanding(s))}
+                    {money(effectiveOutstanding(s, settlement))}
                   </td>
-                  <td className="numeric">{money(adjustment(s))}</td>
+                  <td><span className="badge pending">Em aberto</span></td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-        {!cohort.length && (
+        {!openSales.length && (
           <Empty
-            title="Sem comissões neste período"
-            detail="As comissões aparecem após registrar as vendas."
+            title="Nenhuma comissão em aberto"
+            detail="Todos os saldos aprovados estão quitados ou ainda não existem vendas."
           />
         )}
       </section>
+      {settlement && (
+        <section className="surface section-gap">
+          <div className="surface-title">
+            <div>
+              <h2>Acerto anterior</h2>
+              <p className="muted">
+                Lista manual registrada · total pago informado: {money(settlement.paidAmountCents)}
+              </p>
+            </div>
+            <span className="badge approved">Registrado</span>
+          </div>
+          <div className="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Cliente</th>
+                  <th className="numeric">Venda</th>
+                  <th className="numeric">Comissão</th>
+                  <th>Situação</th>
+                </tr>
+              </thead>
+              <tbody>
+                {settledItems.map((item) => (
+                  <tr key={item.saleId}>
+                    <td>{item.label}</td>
+                    <td className="numeric">{money(item.saleAmountCents)}</td>
+                    <td className="numeric commission-value">{money(item.commissionCents)}</td>
+                    <td><span className="badge approved">Quitada</span></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="table-footer commission-settlement-footer">
+            <span>Comissão listada</span>
+            <strong>{money(listedCommission)}</strong>
+            <span>Diferença do pagamento</span>
+            <strong>{money(Math.max(0, settlementDifference))}</strong>
+          </div>
+        </section>
+      )}
       {open && (
         <Modal title="Registrar recebimento" onClose={() => setOpen(false)}>
           <p className="notice">
@@ -923,24 +996,22 @@ function Commissions({ start, end }: { start: string; end: string }) {
               </label>
             </div>
             <h3 className="form-subheading">Distribuir entre comissões</h3>
-            {sales
-              .filter((s) => outstanding(s) > 0)
-              .map((s) => (
-                <label className="allocation" key={s.id}>
-                  <span>
-                    {s.client}
-                    <small>Disponível: {money(outstanding(s))}</small>
-                  </span>
-                  <input
-                    inputMode="decimal"
-                    placeholder="0,00"
-                    value={alloc[s.id] ?? ""}
-                    onChange={(e) =>
-                      setAlloc({ ...alloc, [s.id]: e.target.value })
-                    }
-                  />
-                </label>
-              ))}
+            {openSales.map((s) => (
+              <label className="allocation" key={s.id}>
+                <span>
+                  {s.client}
+                  <small>Disponível: {money(effectiveOutstanding(s, settlement))}</small>
+                </span>
+                <input
+                  inputMode="decimal"
+                  placeholder="0,00"
+                  value={alloc[s.id] ?? ""}
+                  onChange={(e) =>
+                    setAlloc({ ...alloc, [s.id]: e.target.value })
+                  }
+                />
+              </label>
+            ))}
             <p className="muted">
               A soma distribuída deve ser exatamente igual ao total recebido.
             </p>

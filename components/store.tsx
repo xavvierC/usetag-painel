@@ -7,6 +7,7 @@ import {
   type Sale,
   type Goal,
   type Transaction,
+  type CommissionSettlement,
 } from "@/lib/domain/finance";
 import { Brand } from "./ui";
 import { blankClient, type Client } from "@/lib/domain/client";
@@ -18,7 +19,11 @@ type Store = {
   transactions: Transaction[];
   live: boolean;
   busy: boolean;
-  profile: { name: string; rateBps: number };
+  profile: {
+    name: string;
+    rateBps: number;
+    commissionSettlement?: CommissionSettlement;
+  };
   saveSale: (sale: Sale) => Promise<void>;
   archiveSale: (sale: Sale, archived: boolean) => Promise<void>;
   registerPayment: (
@@ -44,7 +49,10 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   >("loading");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-  const [profile, setProfile] = useState({ name: "Eduardo", rateBps: 500 });
+  const [profile, setProfile] = useState<Store["profile"]>({
+    name: "Eduardo",
+    rateBps: 500,
+  });
   const commandActive = useRef(false);
   const pendingKeys = useRef(new Map<string, string>());
   async function refresh() {
@@ -72,6 +80,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     setProfile({
       name: d.profile?.name ?? "Eduardo",
       rateBps: d.profile?.rate_bps ?? 500,
+      commissionSettlement: d.profile?.commission_settlement ?? undefined,
     });
   }
   useEffect(() => {

@@ -28,6 +28,18 @@ export type Transaction = {
   confirmed: boolean;
   derived?: boolean;
 };
+export type CommissionSettlementItem = {
+  saleId: string;
+  label: string;
+  saleAmountCents: number;
+  commissionCents: number;
+};
+export type CommissionSettlement = {
+  label: string;
+  paidAmountCents: number;
+  items: CommissionSettlementItem[];
+  note?: string;
+};
 export type Goal = {
   amountCents: number;
   startsOn: string;
@@ -111,6 +123,48 @@ export function summary(sales: Sale[], start: string, end: string) {
     received: cohort.reduce((n, s) => n + s.receivedCents, 0),
     pending: cohort.reduce((n, s) => n + outstanding(s), 0),
     adjustments: cohort.reduce((n, s) => n + adjustment(s), 0),
+  };
+}
+export function isSettledByManualControl(
+  sale: Sale,
+  settlement?: CommissionSettlement,
+) {
+  return !!settlement?.items.some((item) => item.saleId === sale.id);
+}
+export function effectiveReceived(sale: Sale, settlement?: CommissionSettlement) {
+  return isSettledByManualControl(sale, settlement)
+    ? Math.max(sale.receivedCents, obligation(sale))
+    : sale.receivedCents;
+}
+export function effectiveOutstanding(
+  sale: Sale,
+  settlement?: CommissionSettlement,
+) {
+  return isSettledByManualControl(sale, settlement)
+    ? 0
+    : outstanding(sale);
+}
+export function summaryWithSettlement(
+  sales: Sale[],
+  start: string,
+  end: string,
+  settlement?: CommissionSettlement,
+) {
+  const base = summary(sales, start, end);
+  const settled = sales.filter(
+    (sale) =>
+      sale.soldOn >= start &&
+      sale.soldOn <= end &&
+      isSettledByManualControl(sale, settlement),
+  );
+  const settledCommission = settled.reduce(
+    (total, sale) => total + obligation(sale),
+    0,
+  );
+  return {
+    ...base,
+    received: base.received + settledCommission,
+    pending: Math.max(0, base.pending - settledCommission),
   };
 }
 export function allocatePayment(

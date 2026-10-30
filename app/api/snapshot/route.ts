@@ -24,7 +24,7 @@ export async function GET() {
     db.from("goals").select("*").eq("owner_id", user.user.id).maybeSingle(),
     db
       .from("profiles")
-      .select("name,rate_bps")
+      .select("name,rate_bps,commission_settlement")
       .eq("owner_id", user.user.id)
       .maybeSingle(),
     db
