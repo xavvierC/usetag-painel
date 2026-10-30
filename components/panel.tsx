@@ -721,15 +721,27 @@ function SalesChart({
   });
   const top = Math.max(10000, ...buckets.map((b) => b.value));
   const max = Math.ceil(top / 10000) * 10000;
+  const total = buckets.reduce((sum, bucket) => sum + bucket.value, 0);
+  const formatChartTick = (value: number) => {
+    if (value === 0) return "R$ 0";
+    const reais = value / 100;
+    if (reais >= 1000) {
+      return `R$ ${(reais / 1000).toLocaleString("pt-BR", {
+        maximumFractionDigits: 1,
+      })} mil`;
+    }
+    return `R$ ${Math.round(reais).toLocaleString("pt-BR")}`;
+  };
   return (
     <section className="surface chart-card">
       <div className="surface-title">
         <div>
-          <h2>Evolução de vendas</h2>
-          <p className="muted">Vendas aprovadas no período</p>
+          <h2>Vendas no período</h2>
+          <p className="muted">Aprovadas por dia</p>
         </div>
-        <span className="legend">
-          <i /> Valor vendido
+        <span className="chart-total">
+          <small>Total</small>
+          <strong>{money(total)}</strong>
         </span>
       </div>
       <div
@@ -740,17 +752,15 @@ function SalesChart({
           .join("; ")}
       >
         <div className="chart-axis">
-          {[1, 0.75, 0.5, 0.25, 0].map((n) => (
+          {[1, 0.5, 0].map((n) => (
             <span key={n}>
-              {new Intl.NumberFormat("pt-BR", {
-                maximumFractionDigits: 0,
-              }).format((max * n) / 100)}
+              {formatChartTick(max * n)}
             </span>
           ))}
         </div>
         <div className="chart-plot">
           <div className="chart-grid">
-            {[1, 2, 3, 4, 5].map((n) => (
+            {[1, 2, 3].map((n) => (
               <i key={n} />
             ))}
           </div>

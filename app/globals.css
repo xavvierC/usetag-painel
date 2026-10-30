@@ -720,6 +720,28 @@ option {
 .chart-card {
   padding-bottom: 16px;
 }
+.chart-card .surface-title {
+  align-items: flex-start;
+}
+.chart-total {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+  flex-shrink: 0;
+}
+.chart-total small {
+  color: #9eacbb;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.chart-total strong {
+  color: #8af0ba;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
 .legend {
   display: flex;
   align-items: center;
@@ -736,19 +758,20 @@ option {
 .chart-area {
   display: flex;
   gap: 12px;
-  height: 190px;
-  margin-top: 24px;
-  margin-bottom: 28px;
+  height: 184px;
+  margin-top: 20px;
+  margin-bottom: 30px;
 }
 .chart-axis {
-  width: 30px;
+  width: 48px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   align-items: flex-end;
   font-size: 9px;
   color: #a5b3c2;
-  transform: translateY(-6px);
+  transform: translateY(-4px);
+  white-space: nowrap;
 }
 .chart-plot {
   position: relative;
@@ -765,18 +788,24 @@ option {
 .chart-grid i {
   border-top: 1px solid #3b4450;
 }
+.chart-grid i:first-child {
+  border-top-color: #4e5a68;
+}
+.chart-grid i:last-child {
+  border-top-color: #566373;
+}
 .chart-bars {
   display: flex;
   align-items: end;
   justify-content: space-around;
   position: absolute;
   inset: 0 6px;
-  gap: 15px;
+  gap: clamp(8px, 3vw, 20px);
 }
 .bar-column {
   height: 100%;
   flex: 1;
-  max-width: 45px;
+  max-width: 48px;
   position: relative;
   display: flex;
   align-items: end;
@@ -801,6 +830,7 @@ option {
   left: 50%;
   transform: translateX(-50%);
   font-size: 9px;
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
   color: #b6e6cf;
 }
@@ -2297,8 +2327,8 @@ dialog::backdrop {
     font-size: 14px;
   }
   .chart-area {
-    height: 165px;
-    margin-top: 28px;
+    height: 170px;
+    margin-top: 24px;
   }
   .chart-bars {
     gap: 14px;
@@ -2648,6 +2678,13 @@ dialog::backdrop {
   }
   .toolbar-date {
     font-size: 9px;
+  }
+  .chart-total strong {
+    font-size: 13px;
+  }
+  .chart-axis {
+    width: 43px;
+    font-size: 8px;
   }
 }
 @media (max-width: 767px) {
