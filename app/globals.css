@@ -1823,7 +1823,7 @@ td small {
   line-height: 1.6;
 }
 .raffle-draw-card .button {
-  margin-top: 18px;
+  margin-top: 8px;
 }
 .raffle-draw-card .button:disabled {
   cursor: not-allowed;
@@ -1835,6 +1835,62 @@ td small {
   color: #8492a0;
   font-size: 9px;
   text-align: center;
+}
+.raffle-winner {
+  display: grid;
+  align-content: center;
+  width: 100%;
+  min-height: 92px;
+  margin: 4px 0 8px;
+  padding: 14px;
+  border: 1px solid #344454;
+  border-radius: 10px;
+  background: #17212b;
+}
+.raffle-winner small {
+  color: #8da0b1;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+.raffle-winner strong {
+  display: block;
+  margin-top: 7px;
+  color: #f3f7fa;
+  font-size: 21px;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+  animation: raffle-name-in 180ms ease-out both;
+}
+.raffle-winner.is-rolling strong {
+  color: #b8f4d5;
+}
+.raffle-clear-test {
+  align-self: center;
+  min-height: 40px;
+  margin: 4px 0;
+  padding: 0 12px;
+  border: 0;
+  color: #b8f4d5;
+  background: transparent;
+  font: inherit;
+  font-size: 12px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.raffle-clear-test:focus-visible {
+  outline: 2px solid #8de4b4;
+  outline-offset: 2px;
+}
+@keyframes raffle-name-in {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .raffle-winner strong {
+    animation: none;
+  }
 }
 .goals-page {
   max-width: 840px;
