@@ -1836,6 +1836,216 @@ td small {
   font-size: 9px;
   text-align: center;
 }
+.raffle-winner {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  width: 100%;
+  min-height: 174px;
+  margin: 8px 0 12px;
+  padding: 18px 14px;
+  overflow: hidden;
+  border: 1px solid #3b5550;
+  border-radius: 13px;
+  background:
+    radial-gradient(ellipse at 50% 0%, #38c98520, transparent 58%),
+    linear-gradient(155deg, #1d2b31, #17212b 72%);
+  text-align: center;
+  isolation: isolate;
+  transition: border-color 220ms ease, background-color 220ms ease;
+}
+.raffle-winner-mark {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  margin-bottom: 10px;
+  place-items: center;
+  border: 1px solid #507568;
+  border-radius: 50%;
+  color: #9ae6bd;
+  background: #1c382d;
+  transition: transform 240ms ease, background-color 240ms ease;
+}
+.raffle-winner small {
+  padding: 5px 9px;
+  border: 1px solid #38564a;
+  border-radius: 999px;
+  color: #a5e4c1;
+  background: #1c342b;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+.raffle-winner.is-rolling {
+  border-color: #639a7e;
+}
+.raffle-winner.is-rolling .raffle-winner-mark {
+  transform: rotate(-9deg) scale(1.04);
+  background: #244837;
+}
+.raffle-winner strong {
+  display: block;
+  max-width: 100%;
+  min-height: 30px;
+  margin-top: 11px;
+  color: #f3f7fa;
+  font-size: clamp(20px, 2.2vw, 26px);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+  overflow-wrap: anywhere;
+  animation: raffle-name-in 220ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
+}
+.raffle-winner.is-rolling strong {
+  color: #c4f1d7;
+}
+.raffle-winner.is-official {
+  border-color: #43b77a;
+  background:
+    radial-gradient(ellipse at 50% 0%, #39d88934, transparent 62%),
+    linear-gradient(155deg, #203c32, #17272b 74%);
+}
+.raffle-roll-line {
+  position: relative;
+  display: block;
+  width: min(220px, 82%);
+  height: 3px;
+  margin-top: 13px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #324a41;
+}
+.raffle-roll-line i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 38%;
+  border-radius: inherit;
+  background: #8de4b4;
+  animation: raffle-roll-line 760ms cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
+}
+.raffle-page.is-draw-focus {
+  min-height: min(74dvh, 700px);
+  align-content: center;
+  gap: 0;
+}
+.raffle-page.is-draw-focus > .raffle-hero,
+.raffle-page.is-draw-focus > .raffle-metrics,
+.raffle-page.is-draw-focus .raffle-list {
+  display: none;
+}
+.main:has(.raffle-page.is-draw-focus) > .main-footer {
+  display: none;
+}
+.raffle-page.is-draw-focus .raffle-content {
+  grid-template-columns: minmax(0, 720px);
+  justify-content: center;
+  width: 100%;
+}
+.raffle-page.is-draw-focus .raffle-draw-card {
+  align-items: center;
+  width: 100%;
+  min-height: 0;
+  margin: 0 auto;
+  padding: clamp(20px, 4vw, 48px);
+  border-color: #3b5550;
+  background:
+    radial-gradient(ellipse at 50% 0%, #38c98512, transparent 54%),
+    var(--surface);
+  text-align: center;
+  animation: raffle-focus-enter 420ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
+}
+.raffle-page.is-draw-focus .raffle-draw-icon {
+  display: none;
+}
+.raffle-focus-prize {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  max-width: 100%;
+  margin-top: 12px;
+  padding: 7px 11px;
+  border: 1px solid #40594e;
+  border-radius: 999px;
+  color: #a9c8b6;
+  background: #1b3028;
+  font-size: 11px;
+}
+.raffle-focus-prize svg {
+  flex: 0 0 auto;
+  color: #8de4b4;
+}
+.raffle-focus-prize strong {
+  color: #e5f4eb;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+.raffle-page.is-draw-focus .raffle-draw-card h2 {
+  font-size: clamp(23px, 3vw, 30px);
+  letter-spacing: -0.04em;
+}
+.raffle-page.is-draw-focus .raffle-draw-card p {
+  max-width: 440px;
+  min-height: 0;
+  font-size: 13px;
+}
+.raffle-page.is-draw-focus .raffle-winner {
+  min-height: clamp(190px, 32vh, 280px);
+  margin: 24px 0 14px;
+  border-radius: 16px;
+}
+.raffle-page.is-draw-focus .raffle-winner strong {
+  font-size: clamp(27px, 5vw, 42px);
+}
+.raffle-page.is-draw-focus .raffle-draw-card > .button {
+  width: min(100%, 360px);
+}
+.raffle-page.is-draw-focus .raffle-draw-note {
+  max-width: 420px;
+  line-height: 1.6;
+}
+.raffle-focus-back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 42px;
+  margin-top: 12px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 8px;
+  color: #aab6c2;
+  background: transparent;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  transition: color 180ms ease, background-color 180ms ease;
+}
+.raffle-focus-back:hover:not(:disabled) {
+  color: #f3f7fa;
+  background: #ffffff0a;
+}
+.raffle-focus-back:focus-visible {
+  outline: 2px solid #8de4b4;
+  outline-offset: 2px;
+}
+.raffle-focus-back:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+@keyframes raffle-name-in {
+  from { opacity: 0; transform: translateY(-7px) scale(0.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes raffle-roll-line {
+  from { transform: translateX(-8%); }
+  to { transform: translateX(190%); }
+}
+@keyframes raffle-focus-enter {
+  from { opacity: 0; transform: translateY(12px) scale(0.99); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
 .goals-page {
   max-width: 840px;
   margin: auto;

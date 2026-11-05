@@ -1,7 +1,8 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import {
+  ArrowLeft,
   CalendarDays,
   CheckCircle2,
   Gift,
@@ -9,35 +10,107 @@ import {
   Ticket,
   UsersRound,
 } from "lucide-react";
-import {
-  raffleCampaign,
-  raffleParticipants,
-  raffleTrackingCode,
-  salePlateCount,
-} from "@/lib/domain/raffle";
-import { dateLabel } from "@/lib/domain/finance";
+import { raffleCampaign, salePlateCount } from "@/lib/domain/raffle";
 import { useStore } from "./store";
 import { Empty } from "./ui";
 
+type DrawResult = { name: string; count: number; drawnAt: string };
+const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 export function Raffle() {
   const { sales, clients, live } = useStore();
-  const [winner, setWinner] = useState<{name:string;count:number;drawnAt:string}|null>(null);
+  const [winner, setWinner] = useState<DrawResult | null>(null);
   const [busy, setBusy] = useState(true);
-  const [error, setError] = useState('');
-  useEffect(()=>{if(!live){setBusy(false);return;}fetch('/api/raffle').then(async r=>{const d=await r.json();if(!r.ok)throw Error(d.error);setWinner(d.result);setBusy(false);}).catch(()=>setError('Atualize a página para consultar o sorteio.'));},[live]);
-  async function draw(){
-    if(!window.confirm('Confirmar o sorteio entre todos os clientes cadastrados? O resultado ficará salvo.'))return;
-    setBusy(true);setError('');
-    try{const r=await fetch('/api/raffle',{method:'POST'});const d=await r.json();if(!r.ok)throw Error(d.error);setWinner(d.result);}catch(e){setError(e instanceof Error?e.message:'Não foi possível sortear.');}finally{setBusy(false);}
+  const [animating, setAnimating] = useState(false);
+  const [focusMode, setFocusMode] = useState(false);
+  const [rollingName, setRollingName] = useState("");
+  const [error, setError] = useState("");
+  const drawCardRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    if (!live) {
+      setBusy(false);
+      return;
+    }
+    let active = true;
+    fetch("/api/raffle")
+      .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok) throw Error(data.error);
+        if (active) setWinner(data.result);
+      })
+      .catch(() => {
+        if (active) setError("Atualize a página para consultar o sorteio.");
+      })
+      .finally(() => {
+        if (active) setBusy(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [live]);
+
+  useEffect(() => {
+    if (!focusMode) return;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const frame = window.requestAnimationFrame(() => {
+      const card = drawCardRef.current;
+      if (!card) return;
+      const cardTop = card.getBoundingClientRect().top;
+      const fixedHeaderBottom = document.querySelector(".topbar")?.getBoundingClientRect().bottom ?? 0;
+      const visibleHeight = Math.max(0, window.innerHeight - fixedHeaderBottom);
+      const centerOffset = Math.max(0, (visibleHeight - card.offsetHeight) / 2);
+      window.scrollTo({
+        top: Math.max(0, window.scrollY + cardTop - fixedHeaderBottom - centerOffset),
+        behavior: reducedMotion ? "auto" : "smooth",
+      });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [focusMode]);
+
+  async function draw() {
+    if (busy || winner || !live || !clients.length) return;
+    if (!window.confirm("Confirmar o sorteio oficial entre todos os clientes cadastrados? O resultado ficará salvo e não poderá ser sorteado novamente.")) return;
+    setBusy(true);
+    setFocusMode(true);
+    setError("");
+
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const steps = reducedMotion ? 1 : 26;
+    setAnimating(true);
+    for (let step = 0; step < steps; step += 1) {
+      const client = clients[Math.floor(Math.random() * clients.length)];
+      setRollingName(client.name);
+      if (!reducedMotion) {
+        const progress = (step + 1) / steps;
+        await wait(58 + Math.round(progress ** 3 * 115));
+      }
+    }
+    setAnimating(false);
+
+    try {
+      const response = await fetch("/api/raffle", { method: "POST" });
+      const data = await response.json();
+      if (!response.ok) throw Error(data.error);
+      setWinner(data.result);
+      setRollingName(data.result.name);
+    } catch (err) {
+      setRollingName("");
+      setError(err instanceof Error ? err.message : "Não foi possível sortear.");
+    } finally {
+      setBusy(false);
+    }
   }
-  const participants = clients.map(client=>({id:client.id,client:client.name,items:[],note:undefined,soldOn:'2026-11-05'}));
+
+  const participants = clients.map((client) => ({ id: client.id, client: client.name }));
   const plates = sales.reduce(
     (total, sale) => total + salePlateCount(sale),
     0,
   );
+  const displayedName = winner?.name ?? rollingName;
 
   return (
-    <div className="raffle-page">
+    <div className={`raffle-page ${focusMode ? "is-draw-focus" : ""}`}>
       <section className="surface raffle-hero">
         <div className="raffle-hero-copy">
           <span className="eyebrow">{raffleCampaign.label}</span>
@@ -129,24 +202,36 @@ export function Raffle() {
           )}
         </section>
 
-        <aside className="surface raffle-draw-card">
+        <aside className="surface raffle-draw-card" ref={drawCardRef}>
           <span className="raffle-draw-icon">
             <LockKeyhole size={19} />
           </span>
           <span className="eyebrow">SORTEIO</span>
-          <h2>Pronto para a apuração</h2>
+          {focusMode && <span className="raffle-focus-prize"><Gift size={14} /><span>Prêmio</span><strong>{raffleCampaign.prize}</strong></span>}
+          <h2>{winner ? "Resultado oficial" : focusMode ? animating ? "Sorteio em andamento" : "Apuração oficial" : "Pronto para a apuração"}</h2>
           <p>
-            O sorteio será liberado no dia {raffleCampaign.drawOn}, depois da
-            conferência final das entradas.
+            {winner
+              ? `${winner.count} participantes · registrado em ${new Date(winner.drawnAt).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}`
+              : focusMode
+                ? animating
+                  ? `Apuração entre ${participants.length} participantes.`
+                  : "Registrando o resultado oficial."
+                : `O sorteio será liberado no dia ${raffleCampaign.drawOn}, depois da conferência final das entradas.`}
           </p>
-          {winner && <div role="status"><h3>{winner.name}</h3><p>Ganhador entre {winner.count} participantes. Resultado salvo em {new Date(winner.drawnAt).toLocaleString('pt-BR')}.</p></div>}
-          {error && <p role="alert">{error}</p>}
-          <button className="button secondary full" type="button" disabled={!live || busy || !!winner || !participants.length} onClick={draw}>
-            {winner ? 'Sorteio realizado' : busy ? 'Carregando…' : 'Sortear agora'}
+          <div className={`raffle-winner ${animating ? "is-rolling" : ""} ${winner ? "is-official" : ""}`} aria-live={animating ? "off" : "polite"} aria-atomic="true" role="status">
+            <span className="raffle-winner-mark" aria-hidden="true"><Ticket size={18} /></span>
+            <small>{winner ? "GANHADOR OFICIAL" : animating ? "NOMES PASSANDO" : "RESULTADO OFICIAL"}</small>
+            <strong key={displayedName}>{displayedName || (busy ? "Apurando…" : "Pronto para sortear")}</strong>
+            {animating && <span className="raffle-roll-line" aria-hidden="true"><i /></span>}
+          </div>
+          {error && <p role="alert" className="error">{error}</p>}
+          <button className="button primary full" type="button" disabled={!live || busy || !!winner || !participants.length} onClick={draw}>
+            {winner ? "Sorteio realizado" : busy ? animating ? "Apurando nomes…" : "Carregando resultado…" : "Sortear oficialmente"}
           </button>
           <small className="raffle-draw-note">
-            O resultado é salvo e permanece disponível ao atualizar.
+            O resultado oficial é salvo e só pode ser realizado uma vez.
           </small>
+          {focusMode && <button className="raffle-focus-back" type="button" disabled={busy} onClick={() => setFocusMode(false)}><ArrowLeft size={15} /> Voltar para participantes</button>}
         </aside>
       </div>
     </div>
