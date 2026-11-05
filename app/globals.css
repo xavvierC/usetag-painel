@@ -1837,33 +1837,113 @@ td small {
   text-align: center;
 }
 .raffle-winner {
+  position: relative;
   display: grid;
+  justify-items: center;
   align-content: center;
   width: 100%;
-  min-height: 92px;
-  margin: 4px 0 8px;
-  padding: 14px;
-  border: 1px solid #344454;
-  border-radius: 10px;
-  background: #17212b;
+  min-height: 174px;
+  margin: 8px 0 12px;
+  padding: 18px 14px;
+  overflow: hidden;
+  border: 1px solid #3b5550;
+  border-radius: 13px;
+  background:
+    radial-gradient(ellipse at 50% 0%, #38c98520, transparent 58%),
+    linear-gradient(155deg, #1d2b31, #17212b 72%);
+  text-align: center;
+  isolation: isolate;
+  transition: border-color 220ms ease, background-color 220ms ease;
+}
+.raffle-winner-mark {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  margin-bottom: 10px;
+  place-items: center;
+  border: 1px solid #507568;
+  border-radius: 50%;
+  color: #9ae6bd;
+  background: #1c382d;
+  transition: transform 240ms ease, background-color 240ms ease;
 }
 .raffle-winner small {
-  color: #8da0b1;
+  padding: 5px 9px;
+  border: 1px solid #38564a;
+  border-radius: 999px;
+  color: #a5e4c1;
+  background: #1c342b;
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.1em;
 }
+.raffle-winner.is-rolling {
+  border-color: #639a7e;
+}
+.raffle-winner.is-rolling .raffle-winner-mark {
+  transform: rotate(-9deg) scale(1.04);
+  background: #244837;
+}
 .raffle-winner strong {
   display: block;
-  margin-top: 7px;
+  max-width: 100%;
+  min-height: 30px;
+  margin-top: 11px;
   color: #f3f7fa;
-  font-size: 21px;
-  line-height: 1.25;
+  font-size: clamp(20px, 2.2vw, 26px);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
   overflow-wrap: anywhere;
-  animation: raffle-name-in 180ms ease-out both;
+  animation: raffle-name-in 220ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
 }
 .raffle-winner.is-rolling strong {
-  color: #b8f4d5;
+  color: #c4f1d7;
+}
+.raffle-winner.is-official {
+  border-color: #43b77a;
+  background:
+    radial-gradient(ellipse at 50% 0%, #39d88934, transparent 62%),
+    linear-gradient(155deg, #203c32, #17272b 74%);
+}
+.raffle-winner.is-preview {
+  border-color: #6f62ad;
+  background:
+    radial-gradient(ellipse at 50% 0%, #9277e52b, transparent 62%),
+    linear-gradient(155deg, #29283a, #1b202d 74%);
+}
+.raffle-winner.is-preview .raffle-winner-mark {
+  border-color: #7163aa;
+  color: #d0c5ff;
+  background: #37304f;
+}
+.raffle-winner.is-preview small {
+  border-color: #62568f;
+  color: #d0c5ff;
+  background: #302b43;
+}
+.raffle-roll-line {
+  position: relative;
+  display: block;
+  width: min(220px, 82%);
+  height: 3px;
+  margin-top: 13px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #324a41;
+}
+.raffle-roll-line i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 38%;
+  border-radius: inherit;
+  background: #8de4b4;
+  animation: raffle-roll-line 760ms cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
+}
+.raffle-preview-caption {
+  margin-top: 9px;
+  color: #a8c4b4;
+  font-size: 10px;
 }
 .raffle-clear-test {
   align-self: center;
@@ -1884,12 +1964,20 @@ td small {
   outline-offset: 2px;
 }
 @keyframes raffle-name-in {
-  from { opacity: 0; transform: translateY(5px); }
+  from { opacity: 0; transform: translateY(-7px) scale(0.985); }
   to { opacity: 1; transform: translateY(0); }
 }
+@keyframes raffle-roll-line {
+  from { transform: translateX(-8%); }
+  to { transform: translateX(190%); }
+}
 @media (prefers-reduced-motion: reduce) {
-  .raffle-winner strong {
+  .raffle-winner,
+  .raffle-winner-mark,
+  .raffle-winner strong,
+  .raffle-roll-line i {
     animation: none;
+    transition: none;
   }
 }
 .goals-page {

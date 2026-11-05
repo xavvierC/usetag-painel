@@ -57,11 +57,14 @@ export function Raffle() {
     setAnimating(true);
     setPreviewWinner(null);
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const steps = reducedMotion ? 1 : 22;
+    const steps = reducedMotion ? 1 : 26;
     for (let step = 0; step < steps; step += 1) {
       const person = participants[Math.floor(Math.random() * participants.length)];
       setRollingName(person.name);
-      if (!reducedMotion) await wait(55 + step * 6);
+      if (!reducedMotion) {
+        const progress = (step + 1) / steps;
+        await wait(58 + Math.round(progress ** 3 * 115));
+      }
     }
     setAnimating(false);
   }
@@ -161,11 +164,14 @@ export function Raffle() {
         <aside className="surface raffle-draw-card">
           <span className="raffle-draw-icon"><LockKeyhole size={19} /></span>
           <span className="eyebrow">SORTEIO</span>
-          <h2>{winner ? "Resultado oficial" : "Apuração"}</h2>
-          <p>{winner ? `${winner.count} participantes · resultado registrado em ${new Date(winner.drawnAt).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}` : "Faça um teste visual sem gravar nada ou inicie o sorteio oficial."}</p>
-          <div className={`raffle-winner ${animating ? "is-rolling" : ""}`} aria-live={animating ? "off" : "polite"} aria-atomic="true">
+          <h2>{winner ? "Resultado oficial" : "Apuração do sorteio"}</h2>
+          <p>{winner ? `${winner.count} participantes · registrado em ${new Date(winner.drawnAt).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}` : "Veja a animação em modo de teste ou faça o sorteio oficial quando estiver pronto."}</p>
+          <div className={`raffle-winner ${animating ? "is-rolling" : ""} ${winner ? "is-official" : previewWinner ? "is-preview" : ""}`} aria-live={animating ? "off" : "polite"} aria-atomic="true">
+            <span className="raffle-winner-mark" aria-hidden="true"><Ticket size={18} /></span>
             <small>{winner ? "GANHADOR OFICIAL" : previewWinner ? "TESTE · NÃO REGISTRADO" : animating ? "NOMES PASSANDO" : "GANHADOR"}</small>
             <strong key={displayedName}>{displayedName || (loading ? "Carregando…" : "Pronto para sortear")}</strong>
+            {animating && <span className="raffle-roll-line" aria-hidden="true"><i /></span>}
+            {previewWinner && !winner && <span className="raffle-preview-caption">Prévia local · nenhum resultado foi salvo</span>}
           </div>
           {error && <p role="alert" className="error">{error}</p>}
           <button className="button secondary full" type="button" disabled={!live || loading || animating || drawingOfficial || !!winner || !participants.length} onClick={previewDraw}>
