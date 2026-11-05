@@ -1,4 +1,5 @@
 "use client";
+import { useEffect, useState } from "react";
 
 import {
   CalendarDays,
@@ -19,9 +20,18 @@ import { useStore } from "./store";
 import { Empty } from "./ui";
 
 export function Raffle() {
-  const { sales, live } = useStore();
-  const participants = raffleParticipants(sales);
-  const plates = participants.reduce(
+  const { sales, clients, live } = useStore();
+  const [winner, setWinner] = useState<{name:string;count:number;drawnAt:string}|null>(null);
+  const [busy, setBusy] = useState(true);
+  const [error, setError] = useState('');
+  useEffect(()=>{if(!live){setBusy(false);return;}fetch('/api/raffle').then(async r=>{const d=await r.json();if(!r.ok)throw Error(d.error);setWinner(d.result);setBusy(false);}).catch(()=>setError('Atualize a página para consultar o sorteio.'));},[live]);
+  async function draw(){
+    if(!window.confirm('Confirmar o sorteio entre todos os clientes cadastrados? O resultado ficará salvo.'))return;
+    setBusy(true);setError('');
+    try{const r=await fetch('/api/raffle',{method:'POST'});const d=await r.json();if(!r.ok)throw Error(d.error);setWinner(d.result);}catch(e){setError(e instanceof Error?e.message:'Não foi possível sortear.');}finally{setBusy(false);}
+  }
+  const participants = clients.map(client=>({id:client.id,client:client.name,items:[],note:undefined,soldOn:'2026-11-05'}));
+  const plates = sales.reduce(
     (total, sale) => total + salePlateCount(sale),
     0,
   );
@@ -61,13 +71,13 @@ export function Raffle() {
           <UsersRound size={17} />
           <span>Participantes</span>
           <strong>{participants.length}</strong>
-          <small>compras confirmadas</small>
+          <small>clientes cadastrados</small>
         </section>
         <section className="surface raffle-metric">
           <Ticket size={17} />
           <span>Entradas válidas</span>
           <strong>{participants.length}</strong>
-          <small>um vale por compra</small>
+          <small>uma entrada por cadastro</small>
         </section>
         <section className="surface raffle-metric">
           <Gift size={17} />
@@ -83,7 +93,7 @@ export function Raffle() {
             <div>
               <h2>Participantes confirmados</h2>
               <p className="muted">
-                Somente vendas aprovadas e marcadas na promoção.
+                Todos os clientes cadastrados, incluindo arquivados. Uma entrada por cadastro.
               </p>
             </div>
             <span className="raffle-count">{participants.length} entradas</span>
@@ -96,7 +106,7 @@ export function Raffle() {
           ) : (
             <div className="raffle-entries">
               {participants.map((sale, index) => {
-                const tracking = raffleTrackingCode(sale);
+                const tracking = '';
                 return (
                   <article className="raffle-entry" key={sale.id}>
                     <span className="raffle-entry-number">
@@ -105,7 +115,7 @@ export function Raffle() {
                     <div className="raffle-entry-main">
                       <strong>{sale.client}</strong>
                       <span>
-                        <CheckCircle2 size={13} /> Compra confirmada · {dateLabel(sale.soldOn)}
+                        <CheckCircle2 size={13} /> Cliente cadastrado
                       </span>
                     </div>
                     <div className="raffle-entry-meta">
@@ -129,11 +139,13 @@ export function Raffle() {
             O sorteio será liberado no dia {raffleCampaign.drawOn}, depois da
             conferência final das entradas.
           </p>
-          <button className="button secondary full" type="button" disabled>
-            Sortear ganhador
+          {winner && <div role="status"><h3>{winner.name}</h3><p>Ganhador entre {winner.count} participantes. Resultado salvo em {new Date(winner.drawnAt).toLocaleString('pt-BR')}.</p></div>}
+          {error && <p role="alert">{error}</p>}
+          <button className="button secondary full" type="button" disabled={!live || busy || !!winner || !participants.length} onClick={draw}>
+            {winner ? 'Sorteio realizado' : busy ? 'Carregando…' : 'Sortear agora'}
           </button>
           <small className="raffle-draw-note">
-            Ação bloqueada até a data da campanha.
+            O resultado é salvo e permanece disponível ao atualizar.
           </small>
         </aside>
       </div>
