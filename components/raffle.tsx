@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
+  ArrowLeft,
   CalendarDays,
   CheckCircle2,
   Gift,
@@ -24,7 +25,9 @@ export function Raffle() {
   const [loading, setLoading] = useState(true);
   const [animating, setAnimating] = useState(false);
   const [drawingOfficial, setDrawingOfficial] = useState(false);
+  const [focusMode, setFocusMode] = useState(false);
   const [error, setError] = useState("");
+  const drawCardRef = useRef<HTMLElement>(null);
   const participants = [...clients].sort((a, b) =>
     a.name.localeCompare(b.name, "pt-BR"),
   );
@@ -52,6 +55,19 @@ export function Raffle() {
       active = false;
     };
   }, [live]);
+
+  useEffect(() => {
+    if (!focusMode) return;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const frame = window.requestAnimationFrame(() => {
+      drawCardRef.current?.scrollIntoView({
+        behavior: reducedMotion ? "auto" : "smooth",
+        block: "center",
+        inline: "nearest",
+      });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [focusMode]);
 
   async function rollNames() {
     setAnimating(true);
@@ -89,6 +105,7 @@ export function Raffle() {
     )
       return;
     setDrawingOfficial(true);
+    setFocusMode(true);
     setError("");
     await rollNames();
     try {
@@ -117,7 +134,7 @@ export function Raffle() {
     "";
 
   return (
-    <div className="raffle-page">
+    <div className={`raffle-page ${focusMode ? "is-draw-focus" : ""}`}>
       <section className="surface raffle-hero">
         <div className="raffle-hero-copy">
           <span className="eyebrow">{raffleCampaign.label}</span>
@@ -161,7 +178,7 @@ export function Raffle() {
           )}
         </section>
 
-        <aside className="surface raffle-draw-card">
+        <aside className="surface raffle-draw-card" ref={drawCardRef}>
           <span className="raffle-draw-icon"><LockKeyhole size={19} /></span>
           <span className="eyebrow">SORTEIO</span>
           <h2>{winner ? "Resultado oficial" : "Apuração do sorteio"}</h2>
@@ -174,14 +191,15 @@ export function Raffle() {
             {previewWinner && !winner && <span className="raffle-preview-caption">Prévia local · nenhum resultado foi salvo</span>}
           </div>
           {error && <p role="alert" className="error">{error}</p>}
-          <button className="button secondary full" type="button" disabled={!live || loading || animating || drawingOfficial || !!winner || !participants.length} onClick={previewDraw}>
+          {!focusMode && <button className="button secondary full" type="button" disabled={!live || loading || animating || drawingOfficial || !!winner || !participants.length} onClick={previewDraw}>
             {animating && !drawingOfficial ? "Testando…" : "Testar animação"}
-          </button>
-          {previewWinner && !winner && <button className="raffle-clear-test" type="button" onClick={clearPreview}>Limpar teste</button>}
+          </button>}
+          {!focusMode && previewWinner && !winner && <button className="raffle-clear-test" type="button" onClick={clearPreview}>Limpar teste</button>}
           <button className="button primary full" type="button" disabled={!live || loading || animating || drawingOfficial || !!winner || !participants.length} onClick={drawOfficially}>
             {drawingOfficial ? "Sorteando oficialmente…" : winner ? "Sorteio realizado" : "Sortear oficialmente"}
           </button>
           <small className="raffle-draw-note">O teste não altera os dados. O sorteio oficial fica salvo e só pode ser realizado uma vez.</small>
+          {focusMode && <button className="raffle-focus-back" type="button" disabled={animating || drawingOfficial} onClick={() => setFocusMode(false)}><ArrowLeft size={15} /> Voltar para participantes</button>}
         </aside>
       </div>
     </div>
