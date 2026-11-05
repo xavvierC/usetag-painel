@@ -88,6 +88,7 @@ export function Raffle() {
   async function previewDraw() {
     if (animating || drawingOfficial || !participants.length) return;
     const selected = participants[Math.floor(Math.random() * participants.length)];
+    setFocusMode(true);
     await rollNames();
     setRollingName(selected.name);
     setPreviewWinner(selected.name);
@@ -182,7 +183,7 @@ export function Raffle() {
           <span className="raffle-draw-icon"><LockKeyhole size={19} /></span>
           <span className="eyebrow">SORTEIO</span>
           <h2>{winner ? "Resultado oficial" : "Apuração do sorteio"}</h2>
-          <p>{winner ? `${winner.count} participantes · registrado em ${new Date(winner.drawnAt).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}` : "Veja a animação em modo de teste ou faça o sorteio oficial quando estiver pronto."}</p>
+          <p>{winner ? `${winner.count} participantes · registrado em ${new Date(winner.drawnAt).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}` : "Teste a animação e o palco centralizado sem salvar. O sorteio oficial registra o resultado uma única vez."}</p>
           <div className={`raffle-winner ${animating ? "is-rolling" : ""} ${winner ? "is-official" : previewWinner ? "is-preview" : ""}`} aria-live={animating ? "off" : "polite"} aria-atomic="true">
             <span className="raffle-winner-mark" aria-hidden="true"><Ticket size={18} /></span>
             <small>{winner ? "GANHADOR OFICIAL" : previewWinner ? "TESTE · NÃO REGISTRADO" : animating ? "NOMES PASSANDO" : "GANHADOR"}</small>
@@ -195,9 +196,9 @@ export function Raffle() {
             {animating && !drawingOfficial ? "Testando…" : "Testar animação"}
           </button>}
           {!focusMode && previewWinner && !winner && <button className="raffle-clear-test" type="button" onClick={clearPreview}>Limpar teste</button>}
-          <button className="button primary full" type="button" disabled={!live || loading || animating || drawingOfficial || !!winner || !participants.length} onClick={drawOfficially}>
+          {(!focusMode || drawingOfficial || !!winner) && <button className="button primary full" type="button" disabled={!live || loading || animating || drawingOfficial || !!winner || !participants.length} onClick={drawOfficially}>
             {drawingOfficial ? "Sorteando oficialmente…" : winner ? "Sorteio realizado" : "Sortear oficialmente"}
-          </button>
+          </button>}
           <small className="raffle-draw-note">O teste não altera os dados. O sorteio oficial fica salvo e só pode ser realizado uma vez.</small>
           {focusMode && <button className="raffle-focus-back" type="button" disabled={animating || drawingOfficial} onClick={() => setFocusMode(false)}><ArrowLeft size={15} /> Voltar para participantes</button>}
         </aside>
