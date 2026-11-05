@@ -60,10 +60,15 @@ export function Raffle() {
     if (!focusMode) return;
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const frame = window.requestAnimationFrame(() => {
-      drawCardRef.current?.scrollIntoView({
+      const card = drawCardRef.current;
+      if (!card) return;
+      const cardTop = card.getBoundingClientRect().top;
+      const fixedHeaderBottom = document.querySelector(".topbar")?.getBoundingClientRect().bottom ?? 0;
+      const visibleHeight = Math.max(0, window.innerHeight - fixedHeaderBottom);
+      const centerOffset = Math.max(0, (visibleHeight - card.offsetHeight) / 2);
+      window.scrollTo({
+        top: Math.max(0, window.scrollY + cardTop - fixedHeaderBottom - centerOffset),
         behavior: reducedMotion ? "auto" : "smooth",
-        block: "center",
-        inline: "nearest",
       });
     });
     return () => window.cancelAnimationFrame(frame);
@@ -182,8 +187,9 @@ export function Raffle() {
         <aside className="surface raffle-draw-card" ref={drawCardRef}>
           <span className="raffle-draw-icon"><LockKeyhole size={19} /></span>
           <span className="eyebrow">SORTEIO</span>
+          {focusMode && <span className="raffle-focus-prize"><Gift size={14} /><span>Prêmio</span><strong>{raffleCampaign.prize}</strong></span>}
           <h2>{winner ? "Resultado oficial" : "Apuração do sorteio"}</h2>
-          <p>{winner ? `${winner.count} participantes · registrado em ${new Date(winner.drawnAt).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}` : "Teste a animação e o palco centralizado sem salvar. O sorteio oficial registra o resultado uma única vez."}</p>
+          <p>{winner ? `${winner.count} participantes · registrado em ${new Date(winner.drawnAt).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}` : focusMode ? drawingOfficial ? "Apuração oficial em andamento." : "Prévia de teste · não altera o sorteio oficial." : "Teste a animação e o palco centralizado sem salvar. O sorteio oficial registra o resultado uma única vez."}</p>
           <div className={`raffle-winner ${animating ? "is-rolling" : ""} ${winner ? "is-official" : previewWinner ? "is-preview" : ""}`} aria-live={animating ? "off" : "polite"} aria-atomic="true">
             <span className="raffle-winner-mark" aria-hidden="true"><Ticket size={18} /></span>
             <small>{winner ? "GANHADOR OFICIAL" : previewWinner ? "TESTE · NÃO REGISTRADO" : animating ? "NOMES PASSANDO" : "GANHADOR"}</small>

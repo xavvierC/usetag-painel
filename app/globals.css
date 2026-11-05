@@ -1955,6 +1955,9 @@ td small {
 .raffle-page.is-draw-focus .raffle-list {
   display: none;
 }
+.main:has(.raffle-page.is-draw-focus) > .main-footer {
+  display: none;
+}
 .raffle-page.is-draw-focus .raffle-content {
   grid-template-columns: minmax(0, 720px);
   justify-content: center;
@@ -1965,7 +1968,7 @@ td small {
   width: 100%;
   min-height: 0;
   margin: 0 auto;
-  padding: clamp(24px, 5vw, 52px);
+  padding: clamp(20px, 4vw, 48px);
   border-color: #3b5550;
   background:
     radial-gradient(ellipse at 50% 0%, #38c98512, transparent 54%),
@@ -1975,6 +1978,29 @@ td small {
 }
 .raffle-page.is-draw-focus .raffle-draw-icon {
   display: none;
+}
+.raffle-focus-prize {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  max-width: 100%;
+  margin-top: 12px;
+  padding: 7px 11px;
+  border: 1px solid #40594e;
+  border-radius: 999px;
+  color: #a9c8b6;
+  background: #1b3028;
+  font-size: 11px;
+}
+.raffle-focus-prize svg {
+  flex: 0 0 auto;
+  color: #8de4b4;
+}
+.raffle-focus-prize strong {
+  color: #e5f4eb;
+  font-weight: 650;
+  overflow-wrap: anywhere;
 }
 .raffle-page.is-draw-focus .raffle-draw-card h2 {
   font-size: clamp(23px, 3vw, 30px);
@@ -1986,7 +2012,7 @@ td small {
   font-size: 13px;
 }
 .raffle-page.is-draw-focus .raffle-winner {
-  min-height: clamp(220px, 32vh, 290px);
+  min-height: clamp(190px, 32vh, 280px);
   margin: 24px 0 14px;
   border-radius: 16px;
 }
